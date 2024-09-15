@@ -15,8 +15,7 @@ Harvest Haven is a relaxing farming simulation game where players can grow crops
 ## How to Play
 
 1. Select a tool from the top of the screen:
-   - Hoe: Prepare soil for planting
-   - Seeds: Plant crops in prepared soil
+   - Shovel: Prepare soil for planting and plant crops in the prepared soil
    - Watering Can: Water your crops
    - Scythe: Harvest fully grown crops
 2. Click on the field to use the selected tool
