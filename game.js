@@ -221,9 +221,6 @@ function update(deltaTime) {
 
     // Update crops
     crops.forEach(crop => crop.update(deltaTime));
-
-    // Check achievements
-    checkAchievements();
 }
 
 // Add this function near the top of your game.js file
@@ -365,7 +362,6 @@ function plantSeed(x, y, type) {
         success = true;
         console.log('Planting successful');
     } else {
-        alert('You can only plant in empty garden beds!');
         console.log('Planting failed');
     }
     return success;
@@ -375,9 +371,7 @@ function waterCrop(x, y) {
     const crop = crops.find(crop => crop.x === x && crop.y === y);
     if (crop) {
         crop.watered = true;
-    } else {
-        alert('No crop to water here!');
-    }
+    } 
 }
 
 function harvestCrop(x, y) {
@@ -389,9 +383,8 @@ function harvestCrop(x, y) {
         farmer.inventory.addItem(cropType, 1); // Add 1 of the harvested crop
         // Remove crop from the field
         crops.splice(cropIndex, 1);
-        //alert(`Harvested ${cropType}! Got 1 ${cropType} and 2 ${cropType} seeds.`);
     } else {
-        alert('Crop is not ready to harvest!');
+        console.log('Crop not ready for harvest');
     }
 }
 
@@ -402,7 +395,7 @@ function buySeed(seedType) {
         farmer.inventory.addItem(seedType + 'Seed');
         updateMoneyDisplay();
     } else {
-        alert('Not enough money!');
+        console('Not enough money!');
     }
 }
 
@@ -414,7 +407,6 @@ function buyItem(itemType) {
         farmer.money -= cost;
         farmer.inventory.addItem(itemType);
     } else {
-        // Display a message on the canvas instead of using alert
         displayMessage('Not enough money!');
     }
 }
@@ -425,7 +417,6 @@ function sellItem(itemType) {
         farmer.inventory.removeItem(itemType);
         farmer.money += price;
     } else {
-        // Display a message on the canvas instead of using alert
         displayMessage(`No ${itemType} to sell!`);
     }
 }
@@ -471,15 +462,6 @@ function updateWeather() {
     weather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
 }
 
-function checkAchievements() {
-    if (farmer.money >= 1000 && !achievements.includes('Rich Farmer')) {
-        achievements.push('Rich Farmer');
-        alert('Achievement Unlocked: Rich Farmer!');
-        updateAchievementsUI();
-    }
-    // Add more achievement checks here
-}
-
 function updateMoneyDisplay() {
     // Assuming you have an element to display the money
     const moneyDisplay = document.getElementById('moneyDisplay');
@@ -496,7 +478,8 @@ function sellItem(itemType) {
         farmer.money += price;
         updateMoneyDisplay();
     } else {
-        alert(`No ${itemType} to sell!`);
+        //alert(`No ${itemType} to sell!`);
+        console.log(`No ${itemType} to sell!`);
     }
 }
 

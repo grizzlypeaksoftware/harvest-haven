@@ -54,11 +54,11 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Credits
 
-- Game concept and development: [Your Name]
-- Pixel art assets: [Asset Creator's Name or Source]
+- Game concept and development: Shane Larson
+- Pixel art assets: Shane Larson
 
 ## Contact
 
-If you have any questions or feedback, please open an issue on this repository or contact [your email or contact information].
+If you have any questions or feedback, please open an issue on this repository or contact @PeakGrizzly on X.
 
 Enjoy playing Harvest Haven!
