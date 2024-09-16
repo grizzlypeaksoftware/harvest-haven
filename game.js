@@ -19,10 +19,10 @@ let weather = 'Sunny';
 
 const shop = {
     seeds: {
-        corn: 5,
-        wheat: 3,
-        lettuce: 2,
-        tomato: 2
+        corn: 20,
+        wheat: 5,
+        lettuce: 30,
+        tomato: 50
     },
     sellPrices: {
         cornSeed: 2,
@@ -30,9 +30,9 @@ const shop = {
         lettuceSeed: 1,
         tomatoSeed: 2,
         corn: 10,
-        wheat: 6,
-        lettuce: 12,
-        tomato: 15
+        wheat: 5,
+        lettuce: 15,
+        tomato: 20
     }
 };
 
