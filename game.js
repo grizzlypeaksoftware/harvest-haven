@@ -77,13 +77,13 @@ itemSprites.lettuceSeed.src = 'lettuce-seeds.png';
 itemSprites.tomato.src = 'tomato.png';
 itemSprites.tomatoSeed.src = 'tomato-seeds.png';
 
+const welcomeImage = new Image();
+welcomeImage.src = 'welcome-image.png';
+
 let tooltipVisible = false;
 let tooltipText = '';
 let tooltipX = 0;
 let tooltipY = 0;
-
-
-
 
 
 
@@ -261,16 +261,29 @@ function update(deltaTime) {
     crops.forEach(crop => crop.update(deltaTime));
 }
 
-// Add this function near the top of your game.js file
 function displayWelcomeMessage() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the welcome image
+    const imageSize = Math.min(canvas.width, canvas.height) * 0.4; // 40% of the smaller canvas dimension
+    const imageX = (canvas.width - imageSize) / 2;
+    const imageY = canvas.height * 0.2; // 20% from the top
+
+    if (welcomeImage.complete) {
+        ctx.drawImage(welcomeImage, imageX, imageY, imageSize, imageSize);
+    } else {
+        welcomeImage.onload = () => {
+            ctx.drawImage(welcomeImage, imageX, imageY, imageSize, imageSize);
+        };
+    }
+
     ctx.fillStyle = 'white';
     ctx.font = `${tileSize}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('Welcome to Harvest Haven!', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Welcome to Harvest Haven!', canvas.width / 2, canvas.height * 0.7);
     ctx.font = `${tileSize * 0.5}px Arial`;
-    ctx.fillText('Click to start your farming adventure', canvas.width / 2, canvas.height / 2 + tileSize);
+    ctx.fillText('Click to start your farming adventure', canvas.width / 2, canvas.height * 0.7 + tileSize);
     ctx.textAlign = 'left'; // Reset text alignment for other text rendering
 }
 
