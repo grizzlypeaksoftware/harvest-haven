@@ -1,6 +1,7 @@
 /*** Game Variables ***/
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
 const tileSize = 50;
 
 let lastTime = 0;
@@ -13,24 +14,28 @@ let daysPerSeason = 30;
 let currentDay = 1;
 
 let crops = [];
-let achievements = [];
+//let achievements = [];
 let weather = 'Sunny';
 
 const shop = {
     seeds: {
         corn: 5,
         wheat: 3,
-        lettuce: 2  
+        lettuce: 2,
+        tomato: 2
     },
     sellPrices: {
         cornSeed: 2,
         wheatSeed: 1,
         lettuceSeed: 1,
+        tomatoSeed: 2,
         corn: 10,
         wheat: 6,
-        lettuce: 12
+        lettuce: 12,
+        tomato: 15
     }
 };
+
 const backgroundImage = new Image();
 backgroundImage.src = 'farm-background.png';
 
@@ -59,7 +64,9 @@ const itemSprites = {
     corn: new Image(),
     cornSeed: new Image(),
     lettuce: new Image(),
-    lettuceSeed: new Image()
+    lettuceSeed: new Image(),
+    tomato: new Image(),
+    tomatoSeed: new Image()
 };
 itemSprites.wheat.src = 'wheat.png';
 itemSprites.wheatSeed.src = 'wheat-seeds.png';
@@ -67,11 +74,18 @@ itemSprites.corn.src = 'corn.png';
 itemSprites.cornSeed.src = 'corn-seeds.png';
 itemSprites.lettuce.src = 'lettuce.png';
 itemSprites.lettuceSeed.src = 'lettuce-seeds.png';
+itemSprites.tomato.src = 'tomato.png';
+itemSprites.tomatoSeed.src = 'tomato-seeds.png';
 
 let tooltipVisible = false;
 let tooltipText = '';
 let tooltipX = 0;
 let tooltipY = 0;
+
+
+
+
+
 
 /*** Classes ***/
 class Crop {
@@ -92,6 +106,8 @@ class Crop {
             this.spritesheet.src = 'wheat-spritesheet.png';
         } else if (this.type === 'lettuce') {
             this.spritesheet.src = 'lettuce-spritesheet.png';
+        } else if (this.type === 'tomato') {
+            this.spritesheet.src = 'tomato-spritesheet.png';
         }
     }
 
@@ -107,7 +123,7 @@ class Crop {
     }
 
     render(ctx) {
-        if ((this.type === 'corn' || this.type === 'wheat' || this.type === 'lettuce') && this.spritesheet.complete) {
+        if ((this.type === 'corn' || this.type === 'wheat' || this.type === 'lettuce' || this.type ===  'tomato') && this.spritesheet.complete) {
             // Draw crop using spritesheet
             ctx.drawImage(
                 this.spritesheet,
@@ -197,7 +213,12 @@ class Player {
                     if(success){
                         this.inventory.removeItem('lettuceSeed');
                     }
-                } 
+                } else if (this.inventory.hasItem('tomatoSeed')) {
+                    var success = plantSeed(x, y, 'tomato');
+                    if(success){
+                        this.inventory.removeItem('tomatoSeed');
+                    }
+                }
                 break;
             case 'water':
                 waterCrop(x, y);
@@ -209,7 +230,11 @@ class Player {
     }
 }
 
+
+
 const farmer = new Player();
+
+
 
 /*** Functions ***/
 
@@ -564,8 +589,8 @@ canvas.addEventListener('mousemove', handleMouseMove);
 
 
 function handleInventoryClick(x, y) {
-    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed'];
-    const veggieItems = ['corn', 'wheat', 'lettuce'];
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed', 'tomatoSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato'];
     const inventoryTopPadding = 30;
     const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
 
@@ -608,8 +633,8 @@ function handleMouseMove(event) {
     const inventoryTopPadding = 50;
     const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
 
-    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed'];
-    const veggieItems = ['corn', 'wheat', 'lettuce'];
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed',  'tomatoSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato'];
     const allItems = [...seedItems, ...veggieItems];
 
     tooltipVisible = false;
@@ -634,17 +659,19 @@ function getTooltipText(item) {
         cornSeed: 'Corn Seed',
         wheatSeed: 'Wheat Seed',
         lettuceSeed: 'Lettuce Seed',
+        tomatoSeed: 'Tomato Seed',
         corn: 'Corn',
         wheat: 'Wheat',
-        lettuce: 'Lettuce'
+        lettuce: 'Lettuce',
+        tomato: 'Tomato'        
     };
     return tooltips[item] || 'Unknown item';
 }
 
 
 function drawInventory() {
-    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed'];
-    const veggieItems = ['corn', 'wheat', 'lettuce'];
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed', 'tomatoSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato'];
 
     const inventoryTopPadding = 30; // New padding at the top of the inventory
     const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
