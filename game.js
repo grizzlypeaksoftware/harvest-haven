@@ -19,16 +19,18 @@ let weather = 'Sunny';
 const shop = {
     seeds: {
         corn: 5,
-        wheat: 3
+        wheat: 3,
+        lettuce: 2  
     },
     sellPrices: {
         cornSeed: 2,
         wheatSeed: 1,
+        lettuceSeed: 1,
         corn: 10,
-        wheat: 6
+        wheat: 6,
+        lettuce: 12
     }
-}; 
-
+};
 const backgroundImage = new Image();
 backgroundImage.src = 'farm-background.png';
 
@@ -37,18 +39,13 @@ const SPRITE_HEIGHT = 256; // Assuming each sprite frame is 32 pixels high
 const GRID_SIZE = 4; // 4x4 grid
 const ANIMATION_SPEED = 150; // Milliseconds per frame
 
-const CORN_SPRITE_WIDTH = 256; // Adjust if your spritesheet has different dimensions
-const CORN_SPRITE_HEIGHT = 256; // Adjust if your spritesheet has different dimensions
-const CORN_GROWTH_STAGES = 4; // Assuming 6 growth stages for corn
-
 // Define garden bed locations (adjust based on your generated image)
 const gardenBeds = [
-    {x: 98, y: 252, width: 600, height: 300}
-    // Add more garden bed locations as needed
+    {x: 98, y: 300, width: 600, height: 300}
 ];
 
 // Update these variables to use tileSize
-const inventoryHeight = 2 * tileSize; // Height of the inventory section
+const inventoryHeight = 4 * tileSize; // Height of the inventory section
 const buttonSize = 0.8 * tileSize; // Size of inventory buttons
 const buttonSpacing = 0.2 * tileSize; // Spacing between buttons
 
@@ -60,12 +57,21 @@ const itemSprites = {
     wheat: new Image(),
     wheatSeed: new Image(),
     corn: new Image(),
-    cornSeed: new Image()
+    cornSeed: new Image(),
+    lettuce: new Image(),
+    lettuceSeed: new Image()
 };
 itemSprites.wheat.src = 'wheat.png';
 itemSprites.wheatSeed.src = 'wheat-seeds.png';
 itemSprites.corn.src = 'corn.png';
 itemSprites.cornSeed.src = 'corn-seeds.png';
+itemSprites.lettuce.src = 'lettuce.png';
+itemSprites.lettuceSeed.src = 'lettuce-seeds.png';
+
+let tooltipVisible = false;
+let tooltipText = '';
+let tooltipX = 0;
+let tooltipY = 0;
 
 /*** Classes ***/
 class Crop {
@@ -84,6 +90,8 @@ class Crop {
             this.spritesheet.src = 'corn-spritesheet.png';
         } else if (this.type === 'wheat') {
             this.spritesheet.src = 'wheat-spritesheet.png';
+        } else if (this.type === 'lettuce') {
+            this.spritesheet.src = 'lettuce-spritesheet.png';
         }
     }
 
@@ -99,7 +107,7 @@ class Crop {
     }
 
     render(ctx) {
-        if ((this.type === 'corn' || this.type === 'wheat') && this.spritesheet.complete) {
+        if ((this.type === 'corn' || this.type === 'wheat' || this.type === 'lettuce') && this.spritesheet.complete) {
             // Draw crop using spritesheet
             ctx.drawImage(
                 this.spritesheet,
@@ -183,6 +191,11 @@ class Player {
                     var success = plantSeed(x, y, 'wheat');
                     if(success){
                         this.inventory.removeItem('wheatSeed');
+                    }
+                } else if (this.inventory.hasItem('lettuceSeed')) {
+                    var success = plantSeed(x, y, 'lettuce');
+                    if(success){
+                        this.inventory.removeItem('lettuceSeed');
                     }
                 } 
                 break;
@@ -284,12 +297,21 @@ function handleToolButtonClick(event) {
     });
 }
 
+function drawTooltip() {
+    if (tooltipVisible) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(tooltipX, tooltipY, 150, 30);
+        ctx.fillStyle = 'white';
+        ctx.font = '12px Arial';
+        ctx.fillText(tooltipText, tooltipX + 5, tooltipY + 20);
+    }
+}
 
 function render() {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(backgroundImage, 0, -20, canvas.width, canvas.height);
 
      // Draw tool buttons
      drawToolButtons(ctx);
@@ -304,6 +326,8 @@ function render() {
 
     // Draw inventory items
     drawInventory();
+
+    drawTooltip();
 
     // Draw crops
     crops.forEach(crop => crop.render(ctx));
@@ -483,7 +507,6 @@ function sellItem(itemType) {
     }
 }
 
-
 /*** Input Handling ***/
 
 // Keyboard input for movement
@@ -537,53 +560,141 @@ canvas.addEventListener('click', function(event) {
     }
 });
 
+canvas.addEventListener('mousemove', handleMouseMove);
+
+
 function handleInventoryClick(x, y) {
-    const inventoryItems = ['cornSeed', 'corn', 'wheatSeed', 'wheat'];
-    const startY = canvas.height - inventoryHeight + 0.2 * tileSize;
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce'];
+    const inventoryTopPadding = 30;
+    const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
 
-    inventoryItems.forEach((item, index) => {
-        const buttonX = 0.2 * tileSize + (buttonSize + buttonSpacing) * index * 2;
-        const buyButtonY = startY + buttonSize + 0.6 * tileSize;
-        const sellButtonY = buyButtonY;
-        const sellButtonX = buttonX + buttonSize + 0.1 * tileSize;
+    const handleItemClick = (items, startX) => {
+        items.forEach((item, index) => {
+            const buttonX = startX + 0.2 * tileSize + (buttonSize + buttonSpacing) * index;
+            const buyButtonY = startY + buttonSize + 0.6 * tileSize;
+            const sellButtonY = startY + buttonSize + 1.2 * tileSize;
 
-        // Check if buy button is clicked
-        if (x >= buttonX && x < buttonX + buttonSize &&
-            y >= buyButtonY && y < buyButtonY + buttonSize / 2) {
-            buyItem(item);
-        }
+            // Check if buy button is clicked
+            if (x >= buttonX && x < buttonX + buttonSize &&
+                y >= buyButtonY && y < buyButtonY + buttonSize / 2) {
+                buyItem(item);
+                return true; // Indicate that a button was clicked
+            }
 
-        // Check if sell button is clicked
-        if (x >= sellButtonX && x < sellButtonX + buttonSize &&
-            y >= sellButtonY && y < sellButtonY + buttonSize / 2) {
-            sellItem(item);
+            // Check if sell button is clicked
+            if (x >= buttonX && x < buttonX + buttonSize &&
+                y >= sellButtonY && y < sellButtonY + buttonSize / 2) {
+                sellItem(item);
+                return true; // Indicate that a button was clicked
+            }
+        });
+        return false; // Indicate that no button was clicked
+    };
+
+    // Handle clicks on seeds
+    if (handleItemClick(seedItems, 0)) return;
+
+    // Handle clicks on veggies
+    if (handleItemClick(veggieItems, canvas.width / 2)) return;
+}
+
+// Add this function to handle mouse movement
+function handleMouseMove(event) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    const inventoryTopPadding = 50;
+    const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
+
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce'];
+    const allItems = [...seedItems, ...veggieItems];
+
+    tooltipVisible = false;
+
+    allItems.forEach((item, index) => {
+        const startX = index < seedItems.length ? 0 : canvas.width / 2;
+        const x = startX + 0.2 * tileSize + (buttonSize + buttonSpacing) * (index % seedItems.length);
+
+        if (mouseX >= x && mouseX < x + buttonSize &&
+            mouseY >= startY && mouseY < startY + buttonSize) {
+            tooltipVisible = true;
+            tooltipText = getTooltipText(item);
+            tooltipX = mouseX + 10;
+            tooltipY = mouseY + 10;
         }
     });
 }
 
+// Add this function to get tooltip text for each item
+function getTooltipText(item) {
+    const tooltips = {
+        cornSeed: 'Corn Seed',
+        wheatSeed: 'Wheat Seed',
+        lettuceSeed: 'Lettuce Seed',
+        corn: 'Corn',
+        wheat: 'Wheat',
+        lettuce: 'Lettuce'
+    };
+    return tooltips[item] || 'Unknown item';
+}
+
+
 function drawInventory() {
-    const inventoryItems = ['cornSeed', 'corn', 'wheatSeed', 'wheat'];
-    const startY = canvas.height - inventoryHeight + 0.2 * tileSize;
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce'];
 
-    inventoryItems.forEach((item, index) => {
-        const x = 0.2 * tileSize + (buttonSize + buttonSpacing) * index * 2;
-        
-        // Draw item sprite
-        if (itemSprites[item].complete) {
-            ctx.drawImage(itemSprites[item], x, startY, buttonSize, buttonSize);
-        }
+    const inventoryTopPadding = 30; // New padding at the top of the inventory
+    const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
 
-        // Draw item count
-        ctx.fillStyle = 'black';
-        ctx.font = `${0.32 * tileSize}px Arial`;
-        ctx.fillText(farmer.inventory.items[item] || 0, x + buttonSize / 2, startY + buttonSize + 0.4 * tileSize);
+    // Background for inventory
+    ctx.fillStyle = '#f0e68c';
+    ctx.fillRect(0, canvas.height - inventoryHeight, canvas.width, inventoryHeight);
 
-        // Draw buy button
-        drawButton(x, startY + buttonSize + 0.6 * tileSize, 'Buy', '#4CAF50');
+    // Draw divider
+    const dividerX = canvas.width / 2;
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(dividerX, canvas.height - inventoryHeight);
+    ctx.lineTo(dividerX, canvas.height);
+    ctx.stroke();
 
-        // Draw sell button
-        drawButton(x + buttonSize + 0.1 * tileSize, startY + buttonSize + 0.6 * tileSize, 'Sell', '#f44336');
-    });
+    // Function to draw items
+    const drawItems = (items, startX, label) => {
+        // Draw label
+        ctx.fillStyle = '#8B4513';
+        ctx.font = `bold ${0.4 * tileSize}px Arial`;
+        ctx.fillText(label, startX + 0.2 * tileSize, startY - 0.3 * tileSize);
+
+        items.forEach((item, index) => {
+            const x = startX + 0.2 * tileSize + (buttonSize + buttonSpacing) * index;
+            
+            // Draw item sprite
+            if (itemSprites[item].complete) {
+                ctx.drawImage(itemSprites[item], x, startY, buttonSize, buttonSize);
+            }
+
+            // Draw item count
+            ctx.fillStyle = 'black';
+            ctx.font = `${0.32 * tileSize}px Arial`;
+            ctx.fillText(farmer.inventory.items[item] || 0, x + buttonSize / 2, startY + buttonSize + 0.4 * tileSize);
+
+            // Draw buy button
+            drawButton(x, startY + buttonSize + 0.6 * tileSize, 'Buy', '#4CAF50');
+
+            // Draw sell button
+            drawButton(x, startY + buttonSize + 1.2 * tileSize, 'Sell', '#f44336');
+        });
+    };
+
+    // Draw seeds
+    drawItems(seedItems, 0, 'Seeds');
+
+    // Draw veggies
+    drawItems(veggieItems, canvas.width / 2, 'Veggies');
 }
 
 function drawButton(x, y, text, color) {
@@ -592,22 +703,6 @@ function drawButton(x, y, text, color) {
     ctx.fillStyle = 'white';
     ctx.font = `${0.24 * tileSize}px Arial`;
     ctx.fillText(text, x + 0.1 * tileSize, y + 0.3 * tileSize);
-}
-
-document.addEventListener('keyup', function(event) {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-        farmer.stopMoving();
-    }
-});
-
-function updateAchievementsUI() {
-    const achievementsList = document.getElementById('achievementsList');
-    achievementsList.innerHTML = '';
-    achievements.forEach(achievement => {
-        const li = document.createElement('li');
-        li.textContent = achievement;
-        achievementsList.appendChild(li);
-    });
 }
 
 /*** Start the Game ***/
