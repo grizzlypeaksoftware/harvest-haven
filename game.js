@@ -181,7 +181,7 @@ class Inventory {
 class Player {
     constructor() {
         this.inventory = new Inventory();
-        this.money = 20;
+        this.money = 100;
         this.selectedTool = 'hoe';
 
         this.toolSprites = {
