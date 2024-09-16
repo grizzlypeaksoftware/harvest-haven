@@ -14,6 +14,9 @@ Harvest Haven is a relaxing farming simulation game where players can grow crops
 
 ## How to Play
 
+You can please the game here.
+[Harvest Haven](https://grizzlypeaksoftware.github.io/harvest-haven/)
+
 1. Select a tool from the top of the screen:
    - Shovel: Prepare soil for planting and plant crops in the prepared soil
    - Watering Can: Water your crops
