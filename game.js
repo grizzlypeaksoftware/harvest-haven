@@ -22,17 +22,20 @@ const shop = {
         corn: 20,
         wheat: 5,
         lettuce: 30,
-        tomato: 50
+        tomato: 50,
+        carrot: 100
     },
     sellPrices: {
         cornSeed: 2,
         wheatSeed: 1,
-        lettuceSeed: 1,
-        tomatoSeed: 2,
+        lettuceSeed: 5,
+        tomatoSeed: 10,
+        carrotSeed: 15,
         corn: 10,
         wheat: 5,
         lettuce: 15,
-        tomato: 20
+        tomato: 20,
+        carrot: 50
     }
 };
 
@@ -66,7 +69,9 @@ const itemSprites = {
     lettuce: new Image(),
     lettuceSeed: new Image(),
     tomato: new Image(),
-    tomatoSeed: new Image()
+    tomatoSeed: new Image(),
+    carrot: new Image(),
+    carrotSeed: new Image()
 };
 itemSprites.wheat.src = 'wheat.png';
 itemSprites.wheatSeed.src = 'wheat-seeds.png';
@@ -76,6 +81,8 @@ itemSprites.lettuce.src = 'lettuce.png';
 itemSprites.lettuceSeed.src = 'lettuce-seeds.png';
 itemSprites.tomato.src = 'tomato.png';
 itemSprites.tomatoSeed.src = 'tomato-seeds.png';
+itemSprites.carrot.src = 'carrot.png';
+itemSprites.carrotSeed.src = 'carrot-seeds.png';
 
 const welcomeImage = new Image();
 welcomeImage.src = 'welcome-image.png';
@@ -108,6 +115,8 @@ class Crop {
             this.spritesheet.src = 'lettuce-spritesheet.png';
         } else if (this.type === 'tomato') {
             this.spritesheet.src = 'tomato-spritesheet.png';
+        } else if (this.type === 'carrot') {
+            this.spritesheet.src = 'carrot-spritesheet.png';
         }
     }
 
@@ -123,7 +132,7 @@ class Crop {
     }
 
     render(ctx) {
-        if ((this.type === 'corn' || this.type === 'wheat' || this.type === 'lettuce' || this.type ===  'tomato') && this.spritesheet.complete) {
+        if ((this.type === 'corn' || this.type === 'wheat' || this.type === 'lettuce' || this.type ===  'tomato' || this.type === 'carrot') && this.spritesheet.complete) {
             // Draw crop using spritesheet
             ctx.drawImage(
                 this.spritesheet,
@@ -217,6 +226,11 @@ class Player {
                     var success = plantSeed(x, y, 'tomato');
                     if(success){
                         this.inventory.removeItem('tomatoSeed');
+                    }
+                } else if (this.inventory.hasItem('carrotSeed')) {
+                    var success = plantSeed(x, y, 'carrot');
+                    if(success){
+                        this.inventory.removeItem('carrotSeed');
                     }
                 }
                 break;
@@ -602,8 +616,8 @@ canvas.addEventListener('mousemove', handleMouseMove);
 
 
 function handleInventoryClick(x, y) {
-    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed', 'tomatoSeed'];
-    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato'];
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed', 'tomatoSeed', 'carrotSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato', 'carrot'];
     const inventoryTopPadding = 30;
     const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
 
@@ -646,8 +660,8 @@ function handleMouseMove(event) {
     const inventoryTopPadding = 50;
     const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
 
-    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed',  'tomatoSeed'];
-    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato'];
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed',  'tomatoSeed', 'carrotSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato', 'carrot'];
     const allItems = [...seedItems, ...veggieItems];
 
     tooltipVisible = false;
@@ -673,18 +687,21 @@ function getTooltipText(item) {
         wheatSeed: 'Wheat Seed',
         lettuceSeed: 'Lettuce Seed',
         tomatoSeed: 'Tomato Seed',
+        carrotSeed: 'Carrot Seed',
         corn: 'Corn',
         wheat: 'Wheat',
         lettuce: 'Lettuce',
-        tomato: 'Tomato'        
+        tomato: 'Tomato',
+        carrot: 'Carrot'
+
     };
     return tooltips[item] || 'Unknown item';
 }
 
 
 function drawInventory() {
-    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed', 'tomatoSeed'];
-    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato'];
+    const seedItems = ['cornSeed', 'wheatSeed', 'lettuceSeed', 'tomatoSeed', 'carrotSeed'];
+    const veggieItems = ['corn', 'wheat', 'lettuce', 'tomato', 'carrot'];
 
     const inventoryTopPadding = 30; // New padding at the top of the inventory
     const startY = canvas.height - inventoryHeight + inventoryTopPadding + 0.2 * tileSize;
